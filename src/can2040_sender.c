@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <pico/stdlib.h>
 
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "pico/multicore.h"
+#include "pico/cyw43_arch.h"
+
 #define DELAY_MS 1000
 
 static struct can2040 cbus;
@@ -38,12 +44,12 @@ void canbus_setup(void)
 
 bool timer_callback(__unused struct repeating_timer *t)
 {
-    can2040_transmit((can2040 *) cbus, "hello from sender!\n");
+    can2040_transmit(&cbus, (struct can2040_msg *) "hello from sender \n");
     return true;
 }
 
 
-void main(void)
+int main(void)
 {
     stdio_init_all();
     canbus_setup();

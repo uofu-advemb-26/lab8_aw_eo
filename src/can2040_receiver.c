@@ -3,12 +3,19 @@
 #include <stdio.h>
 #include <pico/stdlib.h>
 
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "pico/multicore.h"
+#include "pico/cyw43_arch.h"
+
 static struct can2040 cbus;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
-    printf(msg);
+    printf("got message\n");
 }
 
 static void PIOx_IRQHandler(void)
@@ -35,7 +42,7 @@ void canbus_setup(void)
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
 
-void main(void)
+int main(void)
 {
     stdio_init_all();
     const char *rtos_name;

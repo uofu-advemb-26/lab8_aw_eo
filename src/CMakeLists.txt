@@ -17,6 +17,7 @@ target_link_libraries(hello_freertos PRIVATE
   pico_multicore
   pico_async_context_freertos
   FreeRTOS-Kernel-Heap4
+  can2040
 )
 
 # The CYW43 is the Wifi/Bluetooth module. If the board is set to pico_w, this
@@ -34,8 +35,8 @@ pico_add_extra_outputs(hello_freertos)
 find_program(OPENOCD openocd)
 find_program(PICOTOOL picotool)
 
-add_custom_target(flash ${PICOTOOL} load -f $<TARGET_FILE:hello_freertos> DEPENDS hello_freertos)
-add_custom_target(openocd_flash ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c program "$<TARGET_FILE:hello_freertos>" verify reset exit' DEPENDS hello_freertos)
+# add_custom_target(flash ${PICOTOOL} load -f $<TARGET_FILE:hello_freertos> DEPENDS hello_freertos)
+# add_custom_target(openocd_flash ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c program "$<TARGET_FILE:hello_freertos>" verify reset exit' DEPENDS hello_freertos)
 
 
 # This is the main binary. List your C files here.
@@ -57,6 +58,7 @@ target_link_libraries(can2040_sender PRIVATE
   pico_multicore
   pico_async_context_freertos
   FreeRTOS-Kernel-Heap4
+  can2040
 )
 
 # The CYW43 is the Wifi/Bluetooth module. If the board is set to pico_w, this
@@ -74,8 +76,8 @@ pico_add_extra_outputs(can2040_sender)
 find_program(OPENOCD openocd)
 find_program(PICOTOOL picotool)
 
-add_custom_target(flash ${PICOTOOL} load -f $<TARGET_FILE:can2040_sender> DEPENDS can2040_sender)
-add_custom_target(openocd_flash ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c program "$<TARGET_FILE:can2040_sender>" verify reset exit' DEPENDS can2040_sender)
+add_custom_target(flash_tx ${PICOTOOL} load -f $<TARGET_FILE:can2040_sender> DEPENDS can2040_sender)
+add_custom_target(openocd_flash_tx ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c program "$<TARGET_FILE:can2040_sender>" verify reset exit' DEPENDS can2040_sender)
 
 
 # This is the main binary. List your C files here.
@@ -97,6 +99,7 @@ target_link_libraries(can2040_receiver PRIVATE
   pico_multicore
   pico_async_context_freertos
   FreeRTOS-Kernel-Heap4
+  can2040
 )
 
 # The CYW43 is the Wifi/Bluetooth module. If the board is set to pico_w, this
@@ -114,5 +117,5 @@ pico_add_extra_outputs(can2040_receiver)
 find_program(OPENOCD openocd)
 find_program(PICOTOOL picotool)
 
-add_custom_target(flash ${PICOTOOL} load -f $<TARGET_FILE:can2040_receiver> DEPENDS can2040_receiver)
-add_custom_target(openocd_flash ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c program "$<TARGET_FILE:can2040_receiver>" verify reset exit' DEPENDS can2040_receiver)
+add_custom_target(flash_rx ${PICOTOOL} load -f $<TARGET_FILE:can2040_receiver> DEPENDS can2040_receiver)
+add_custom_target(openocd_flash_rx ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cmsis-dap.cfg -f target/rp2040.cfg -c 'adapter speed 5000' -c program "$<TARGET_FILE:can2040_receiver>" verify reset exit' DEPENDS can2040_receiver)
