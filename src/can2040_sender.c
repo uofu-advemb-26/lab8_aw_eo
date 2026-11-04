@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <pico/stdlib.h>
 
+#define DELAY_MS 1000
+
 static struct can2040 cbus;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
@@ -32,4 +34,21 @@ void canbus_setup(void)
 
     // Start canbus
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
+}
+
+bool timer_callback(__unused struct repeating_timer *t)
+{
+    can2040_transmit(*cbus, "hello from sender!\n");
+}
+
+
+void main(void)
+{
+    stdio_init_all();
+    canbus_setup();
+    const char *rtos_name;
+    rtos_name = "FreeRTOS";
+    add_repeating_timer_ms(-DELAY_MS, timer_callback, NULL, &timer);
+    vTaskStartScheduler();
+    return 0;
 }
