@@ -38,7 +38,8 @@ void canbus_setup(void)
 
 bool timer_callback(__unused struct repeating_timer *t)
 {
-    can2040_transmit(*cbus, "hello from sender!\n");
+    can2040_transmit((can2040 *) cbus, "hello from sender!\n");
+    return true;
 }
 
 
@@ -46,6 +47,7 @@ void main(void)
 {
     stdio_init_all();
     canbus_setup();
+    repeating_timer_t timer;
     const char *rtos_name;
     rtos_name = "FreeRTOS";
     add_repeating_timer_ms(-DELAY_MS, timer_callback, NULL, &timer);

@@ -8,6 +8,7 @@ static struct can2040 cbus;
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
+    printf(msg);
 }
 
 static void PIOx_IRQHandler(void)
@@ -34,27 +35,11 @@ void canbus_setup(void)
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
 
-
-void main_task(__unused void *params) {
-    xTaskCreate(blink_task, "BlinkThread",
-                BLINK_TASK_STACK_SIZE, NULL, BLINK_TASK_PRIORITY, NULL);
-    char c;
-    while(c = getchar()) {
-        if (c <= 'z' && c >= 'a') putchar(c - 32);
-        else if (c >= 'A' && c <= 'Z') putchar(c + 32);
-        else putchar(c);
-    }
-}
-
-
 void main(void)
 {
     stdio_init_all();
     const char *rtos_name;
     rtos_name = "FreeRTOS";
-    TaskHandle_t task;
-    xTaskCreate(main_task, "MainThread",
-                MAIN_TASK_STACK_SIZE, NULL, MAIN_TASK_PRIORITY, &task);
     vTaskStartScheduler();
     return 0;
 }
