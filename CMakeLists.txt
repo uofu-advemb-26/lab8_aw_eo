@@ -14,6 +14,16 @@ else()
     set(PICO_SDK_PATH lib/pico-sdk)
 endif()
 
+if (DEFINED CAN_2040_PATH)
+# Already defined, e.g. -D flag
+elseif (DEFINED ENV{CAN_2040_PATH})
+# Defined in an environment variable
+    set(CAN_2040_PATH $ENV{CAN_2040_PATH})
+else()
+# Use the submodule
+    set(CAN_2040_PATH lib/can2040)
+endif()
+
 if (DEFINED FREERTOS_PATH)
 # Already defined, e.g. -D flag
 elseif(DEFINED ENV{FREERTOS_PATH})
@@ -49,6 +59,9 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 
 # This imports the Pico SDK (must be included before the project)
 include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
+
+# import can 2040 
+include(${CAN_2040_PATH}/can2040.cmake)
 
 # This imports the library configuration for FreeRTOS
 include(${FREERTOS_PATH}/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
