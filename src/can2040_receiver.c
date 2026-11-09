@@ -11,11 +11,12 @@
 #include "pico/cyw43_arch.h"
 
 static struct can2040 cbus;
+QueueHandle_t msgs;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
-    printf("got message\n");
+    xQueueSendToBackI(msgs, msg, portMAX_DELAY);
 }
 
 static void PIOx_IRQHandler(void)
@@ -42,11 +43,24 @@ void canbus_setup(void)
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
 
+
+void main_task(__unused void *params)
+{
+    struct can2040_msg data;
+    xQueueReceive(msgs, &data, portMAX_DELAY);
+    printf("got message\n");
+}
+
 int main(void)
 {
     stdio_init_all();
     const char *rtos_name;
     rtos_name = "FreeRTOS";
+
+    canbus_setup();
+    TaskHandle_t task;
+    xTaskCreate(main_task, "MainThread",
+        configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1UL, &task);
     vTaskStartScheduler();
     return 0;
 }
