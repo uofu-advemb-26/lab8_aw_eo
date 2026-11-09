@@ -10,13 +10,15 @@
 #include "pico/multicore.h"
 #include "pico/cyw43_arch.h"
 
+#include <queue.h>
+
 static struct can2040 cbus;
 QueueHandle_t msgs;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
-    xQueueSendToBackI(msgs, msg, portMAX_DELAY);
+    xQueueSendToBack(msgs, msg, portMAX_DELAY);
 }
 
 static void PIOx_IRQHandler(void)

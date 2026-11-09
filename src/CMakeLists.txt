@@ -90,8 +90,8 @@ pico_set_program_version(can2040_receiver "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB.
 # These are mutually exclusive, only set one.
-pico_enable_stdio_uart(can2040_receiver 1)
-pico_enable_stdio_usb(can2040_receiver 0)
+pico_enable_stdio_uart(can2040_receiver 0)
+pico_enable_stdio_usb(can2040_receiver 1)
 
 # Add the libraries to the build
 target_link_libraries(can2040_receiver PRIVATE
