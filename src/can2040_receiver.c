@@ -58,7 +58,8 @@ int main(void)
     stdio_init_all();
     const char *rtos_name;
     rtos_name = "FreeRTOS";
-
+    msgs = xQueueCreate(100, sizeof(struct can2040_msg));
+    
     canbus_setup();
     TaskHandle_t task;
     xTaskCreate(main_task, "MainThread",
