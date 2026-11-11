@@ -9,6 +9,16 @@
 #include "pico/multicore.h"
 #include "pico/cyw43_arch.h"
 
+
+#include <stdio.h>
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "pico/stdlib.h"
+#include "pico/multicore.h"
+#include "pico/cyw43_arch.h"
+
 #define DELAY_MS 1000
 
 static struct can2040 cbus;
@@ -45,6 +55,8 @@ void canbus_setup(void)
 bool timer_callback(__unused struct repeating_timer *t)
 {
     can2040_transmit(&cbus, (struct can2040_msg *) "hello from sender \n");
+    bool on = cyw43_arch_gpio_get(CYW43_WL_GPIO_LED_PIN);
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, !on);
     return true;
 }
 
@@ -55,7 +67,8 @@ int main(void)
     canbus_setup();
     repeating_timer_t timer;
     const char *rtos_name;
-    rtos_name = "FreeRTOS";
+    rtos_name = "FreeRTOS";    hard_assert(cyw43_arch_init() == PICO_OK);
+
     add_repeating_timer_ms(-DELAY_MS, timer_callback, NULL, &timer);
     vTaskStartScheduler();
     return 0;

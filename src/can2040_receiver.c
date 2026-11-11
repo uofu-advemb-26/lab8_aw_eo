@@ -56,10 +56,11 @@ void main_task(__unused void *params)
 int main(void)
 {
     stdio_init_all();
+    vTaskDelay(10000); // give time for tty to attach
     const char *rtos_name;
     rtos_name = "FreeRTOS";
     msgs = xQueueCreate(100, sizeof(struct can2040_msg));
-    
+
     canbus_setup();
     TaskHandle_t task;
     xTaskCreate(main_task, "MainThread",
