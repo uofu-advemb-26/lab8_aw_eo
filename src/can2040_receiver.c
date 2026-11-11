@@ -14,11 +14,15 @@
 
 static struct can2040 cbus;
 QueueHandle_t msgs;
+bool on = false;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
-    xQueueSendToBack(msgs, msg, portMAX_DELAY);
+    // xQueueSendToBack(msgs, msg, portMAX_DELAY);
+
+    on = !on;
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
 }
 
 static void PIOx_IRQHandler(void)
@@ -51,14 +55,16 @@ void main_task(__unused void *params)
     struct can2040_msg data;
 
     while (1) {
-    if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
-        printf("got message\n");
+        if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
+            printf("got message\n");
     }
 }
 
 int main(void)
 {
     stdio_init_all();
+    hard_assert(cyw43_arch_init() == PICO_OK);
+
     sleep_ms(10000); // give time for tty to attach
     const char *rtos_name;
     rtos_name = "FreeRTOS";
