@@ -49,8 +49,11 @@ void canbus_setup(void)
 void main_task(__unused void *params)
 {
     struct can2040_msg data;
-    xQueueReceive(msgs, &data, portMAX_DELAY);
-    printf("got message\n");
+
+    while (1) {
+    if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
+        printf("got message\n");
+    }
 }
 
 int main(void)
