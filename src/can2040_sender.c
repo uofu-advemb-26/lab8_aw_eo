@@ -52,12 +52,19 @@ void canbus_setup(void)
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
 
-bool timer_callback(__unused struct repeating_timer *t)
+static void sender_task(__unused void *p)
 {
-    can2040_transmit(&cbus, (struct can2040_msg *) "hello from sender \n");
-    bool on = cyw43_arch_gpio_get(CYW43_WL_GPIO_LED_PIN);
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, !on);
-    return true;
+    bool on = false;
+    uint8_t count = 0;
+
+    for (;;) {
+        struct can2040_msg msg = { .id = 0x123, .dlc = 1 };
+        msg.data[0] = count++;
+        can2040_transmit(&cbus, &msg);
+        on = !on;
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
+        vTaskDelay(pdMS_TO_TICKS(DELAY_MS));
+    }
 }
 
 
@@ -70,7 +77,7 @@ int main(void)
     const char *rtos_name;
     rtos_name = "FreeRTOS";    
 
-    add_repeating_timer_ms(-DELAY_MS, timer_callback, NULL, &timer);
+    xTaskCreate(sender_task, "sender", 1024, NULL, tskIDLE_PRIORITY + 1UL, NULL);
     vTaskStartScheduler();
     return 0;
 }
