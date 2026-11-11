@@ -59,11 +59,10 @@ static void sender_task(__unused void *p)
 
     for (;;) {
         struct can2040_msg msg = { .id = 0x123, .dlc = 1 };
+        vTaskDelay(500);
         msg.data[0] = count++;
-        can2040_transmit(&cbus, &msg);
-        on = !on;
-        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
-        vTaskDelay(pdMS_TO_TICKS(DELAY_MS));
+        int rc = can2040_transmit(&cbus, &msg);
+        printf("tx %u rc=%d\n", msg.data[0], rc);
     }
 }
 
@@ -71,7 +70,6 @@ static void sender_task(__unused void *p)
 int main(void)
 {
     stdio_init_all();
-    hard_assert(cyw43_arch_init() == PICO_OK);
     canbus_setup();
     repeating_timer_t timer;
     const char *rtos_name;
