@@ -35,7 +35,7 @@ static void PIOx_IRQHandler(void)
 
 void canbus_setup(void)
 {
-    uint32_t pio_num = 0;
+    uint32_t pio_num = 1;
     uint32_t sys_clock = 125000000, bitrate = 500000;
     uint32_t gpio_rx = 4, gpio_tx = 5;
 
@@ -44,9 +44,9 @@ void canbus_setup(void)
     can2040_callback_config(&cbus, can2040_cb);
 
     // Enable irqs
-    irq_set_exclusive_handler(PIO0_IRQ_0, PIOx_IRQHandler);
-    irq_set_priority(PIO0_IRQ_0, PICO_DEFAULT_IRQ_PRIORITY - 1);
-    irq_set_enabled(PIO0_IRQ_0, 1);
+    irq_set_exclusive_handler(PIO1_IRQ_0, PIOx_IRQHandler);
+    irq_set_priority(PIO1_IRQ_0, PICO_DEFAULT_IRQ_PRIORITY - 1);
+    irq_set_enabled(PIO1_IRQ_0, 1);
 
     // Start canbus
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
@@ -64,10 +64,11 @@ bool timer_callback(__unused struct repeating_timer *t)
 int main(void)
 {
     stdio_init_all();
+    hard_assert(cyw43_arch_init() == PICO_OK);
     canbus_setup();
     repeating_timer_t timer;
     const char *rtos_name;
-    rtos_name = "FreeRTOS";    hard_assert(cyw43_arch_init() == PICO_OK);
+    rtos_name = "FreeRTOS";    
 
     add_repeating_timer_ms(-DELAY_MS, timer_callback, NULL, &timer);
     vTaskStartScheduler();
