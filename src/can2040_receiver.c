@@ -19,10 +19,10 @@ bool on = false;
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
-    // xQueueSendToBack(msgs, msg, portMAX_DELAY);
+    xQueueSendToBack(msgs, msg, portMAX_DELAY);
 
-    on = !on;
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
+    // on = !on;
+    // cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
 }
 
 static void PIOx_IRQHandler(void)
