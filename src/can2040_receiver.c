@@ -57,6 +57,7 @@ void main_task(__unused void *params)
     while (1) {
         if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
             printf("got message\n");
+            printf("data: %d", data.data[0]);
     }
 }
 
