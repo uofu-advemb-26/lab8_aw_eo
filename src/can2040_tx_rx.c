@@ -18,8 +18,8 @@
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 #include "pico/cyw43_arch.h"
+#include "queue.h"
 
-#define DELAY_MS 1000
 
 static struct can2040 cbus;
 QueueHandle_t msgs;
@@ -29,7 +29,6 @@ static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *
 {
     // Put your code here....
     xQueueSendToBack(msgs, msg, portMAX_DELAY);
-
 }
 
 static void PIOx_IRQHandler(void)
@@ -62,8 +61,8 @@ static void tx_task(__unused void *p)
     uint8_t count = 0;
 
     for (;;) {
-        struct can2040_msg msg = { .id = 0x123, .dlc = 1 };
-        vTaskDelay(500);
+        struct can2040_msg msg = { .id = CAN_ID, .dlc = 1 };
+        vTaskDelay(pdMS_TO_TICKS(TX_DELAY_MS));
         msg.data[0] = count++;
         int rc = can2040_transmit(&cbus, &msg);
         printf("tx %u rc=%d\n", msg.data[0], rc);
@@ -75,8 +74,10 @@ void rx_task(__unused void *params)
     struct can2040_msg data;
 
     while (1) {
-        if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
+        if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE) {
             printf("got message\n");
+            printf("rx id=0x%lx data: %d \n\n", data.id, data.data[0]);
+        }
     }
 }
 
@@ -84,12 +85,15 @@ void rx_task(__unused void *params)
 int main(void)
 {
     stdio_init_all();
-    canbus_setup();
-    repeating_timer_t timer;
+    sleep_ms(5000);
     const char *rtos_name;
     rtos_name = "FreeRTOS";    
+    msgs = xQueueCreate(100, sizeof(struct can2040_msg));
 
-    xTaskCreate(sender_task, "sender", 1024, NULL, tskIDLE_PRIORITY + 1UL, NULL);
+    canbus_setup();
+
+    xTaskCreate(rx_task, "receiver", 1024, NULL, tskIDLE_PRIORITY + 1UL, NULL);
+    xTaskCreate(tx_task, "sender", 1024, NULL, tskIDLE_PRIORITY + 1UL, NULL);
     vTaskStartScheduler();
     return 0;
 }
