@@ -18,7 +18,7 @@ With these settings we do not see the low priority message at all. The receiver 
 
 This is CAN arbitration working as intended. Whenever both boards start transmitting at the same time, the lower ID (0x100) wins, and the low priority board backs off and retries. Because the high priority board always has another frame ready, the bus is never idle long enough for the 0x200 frame to win, so the low priority node is starved.
 
-![No Low Priority Message Oscilloscope][no_low_priority_messsage.pdf]
+![No Low Priority Message Oscilloscope][no_low_priority_message_page-0001.jpg]
 
 ## After adding busy wait delay
 
@@ -28,3 +28,13 @@ This is CAN arbitration working as intended. Whenever both boards start transmit
 ### Setup
 
 Our first step was to increase the delay in the higher priority sender to 1ms instead of 0.
+
+### Observations
+
+We successfully send and receive messages on both boards. The higher priority sender correctly delays 1ms before sending again, and now the low prioirty sender can successfully send its messages.
+
+The higher priority board is correctly receiving the low priority messages.
+
+Our oscilloscope reflects this, with the correct period between the full sending of the low priority data.
+
+![Low Priority Sender Correct 20ms Delay](1ms_delay_high_pri_low_can_send_page-0001.jpg)

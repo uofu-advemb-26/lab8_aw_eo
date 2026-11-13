@@ -123,7 +123,7 @@ add_custom_target(openocd_flash_rx ${OPENOCD} -s ${OPENOCD_PATH} -f interface/cm
 
 
 add_executable(can_high can2040_tx_rx.c)
-target_compile_definitions(can_high PRIVATE CAN_ID=0x100 TX_DELAY_MS=0)
+target_compile_definitions(can_high PRIVATE CAN_ID=0x100 TX_DELAY_MS=1)
 pico_enable_stdio_uart(can_high 0)
 pico_enable_stdio_usb(can_high 1)
 target_link_libraries(can_high PRIVATE
