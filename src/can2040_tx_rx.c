@@ -22,10 +22,14 @@
 #define DELAY_MS 1000
 
 static struct can2040 cbus;
+QueueHandle_t msgs;
+
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
     // Put your code here....
+    xQueueSendToBack(msgs, msg, portMAX_DELAY);
+
 }
 
 static void PIOx_IRQHandler(void)
@@ -52,7 +56,7 @@ void canbus_setup(void)
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
 
-static void sender_task(__unused void *p)
+static void tx_task(__unused void *p)
 {
     bool on = false;
     uint8_t count = 0;
@@ -63,6 +67,16 @@ static void sender_task(__unused void *p)
         msg.data[0] = count++;
         int rc = can2040_transmit(&cbus, &msg);
         printf("tx %u rc=%d\n", msg.data[0], rc);
+    }
+}
+
+void rx_task(__unused void *params)
+{
+    struct can2040_msg data;
+
+    while (1) {
+        if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
+            printf("got message\n");
     }
 }
 
