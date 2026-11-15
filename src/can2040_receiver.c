@@ -1,0 +1,77 @@
+#include <can2040.h>
+#include <hardware/regs/intctrl.h>
+#include <stdio.h>
+#include <pico/stdlib.h>
+
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "pico/multicore.h"
+#include "pico/cyw43_arch.h"
+
+#include <queue.h>
+
+static struct can2040 cbus;
+QueueHandle_t msgs;
+
+static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
+{
+    // Put your code here....
+    xQueueSendToBack(msgs, msg, portMAX_DELAY);
+
+}
+
+static void PIOx_IRQHandler(void)
+{
+    can2040_pio_irq_handler(&cbus);
+}
+
+void canbus_setup(void)
+{
+    uint32_t pio_num = 1;
+    uint32_t sys_clock = 125000000, bitrate = 500000;
+    uint32_t gpio_rx = 4, gpio_tx = 5;
+
+    // Setup canbus
+    can2040_setup(&cbus, pio_num);
+    can2040_callback_config(&cbus, can2040_cb);
+
+    // Enable irqs
+    irq_set_exclusive_handler(PIO1_IRQ_0, PIOx_IRQHandler);
+    irq_set_priority(PIO1_IRQ_0, PICO_DEFAULT_IRQ_PRIORITY - 1);
+    irq_set_enabled(PIO1_IRQ_0, 1);
+
+    // Start canbus
+    can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
+}
+
+
+void main_task(__unused void *params)
+{
+    struct can2040_msg data;
+
+    while (1) {
+        if (xQueueReceive(msgs, &data, portMAX_DELAY) == pdTRUE)
+            printf("got message\n");
+            printf("data: %d", data.data[0]);
+    }
+}
+
+int main(void)
+{
+    stdio_init_all();
+    hard_assert(cyw43_arch_init() == PICO_OK);
+
+    sleep_ms(10000); // give time for tty to attach
+    const char *rtos_name;
+    rtos_name = "FreeRTOS";
+    msgs = xQueueCreate(100, sizeof(struct can2040_msg));
+
+    canbus_setup();
+    TaskHandle_t task;
+    xTaskCreate(main_task, "MainThread",
+        configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1UL, &task);
+    vTaskStartScheduler();
+    return 0;
+}
